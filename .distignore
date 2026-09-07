@@ -1,0 +1,19 @@
+# Excluded from the WordPress.org release zip (wp dist-archive / deploy tooling).
+.distignore
+.git
+.github
+.gitignore
+.phpunit.result.cache
+.wordpress-org
+composer.json
+composer.lock
+CONTRIBUTING.md
+docs
+node_modules
+README.md
+SECURITY.md
+phpcs.xml.dist
+phpstan.neon.dist
+phpunit.xml.dist
+tests
+vendor

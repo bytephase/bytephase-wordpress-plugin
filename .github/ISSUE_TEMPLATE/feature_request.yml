@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest a connector or an improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The plugin is deliberately a **connector**: field mapping, validation, duplicate detection,
+        assignment and notifications live in BytePhase, not in WordPress. Requests that move that
+        logic into the plugin will usually be declined — see section 1 of the README.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve
+      description: Describe the situation in your shop or on your site, not just the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+  - type: input
+    id: form-plugin
+    attributes:
+      label: Form plugin involved
+      description: If you are asking for a new connector, which form plugin and which version?
+      placeholder: "WPForms 1.9"

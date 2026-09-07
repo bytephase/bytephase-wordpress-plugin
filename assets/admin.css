@@ -1,0 +1,26 @@
+/* Styling for the plugin's own admin screens (Connection and Health). */
+
+.bytephase-card {
+    max-width: 640px;
+}
+
+.bytephase-card h2 {
+    margin-top: 0;
+}
+
+.bytephase-list {
+    list-style: disc;
+    padding-left: 20px;
+}
+
+.bytephase-connection {
+    font-size: 1.2em;
+}
+
+.bytephase-status--ok {
+    color: #46b450;
+}
+
+.bytephase-status--fail {
+    color: #dc3232;
+}

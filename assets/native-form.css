@@ -1,0 +1,140 @@
+.bytephase-form {
+    position: relative;
+    max-width: 520px;
+    margin: 2rem auto;
+    padding: 2.25rem 2rem 2rem;
+    background: #ffffff;
+    border: 1px solid #eef0f6;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px -12px rgba(37, 99, 235, 0.18), 0 6px 18px -8px rgba(16, 24, 40, 0.12);
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #101828;
+}
+
+/* Gradient accent bar across the top of the card. */
+.bytephase-form::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #2563eb, #4f46e5 45%, #06b6d4);
+}
+
+.bytephase-form h3 {
+    margin: 0 0 1.25rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #101828;
+}
+
+.bytephase-form p {
+    margin: 0 0 1.1rem;
+}
+
+.bytephase-form label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #344054;
+}
+
+.bytephase-form input[type="text"],
+.bytephase-form input[type="email"],
+.bytephase-form textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.4rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #dfe3ec;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 0.95rem;
+    color: #101828;
+    background: #fbfcfe;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.bytephase-form input::placeholder,
+.bytephase-form textarea::placeholder {
+    color: #98a2b3;
+}
+
+.bytephase-form textarea {
+    min-height: 104px;
+    resize: vertical;
+}
+
+/* Honeypot — never shown to a human; themes that style every <p> must not reveal it. */
+.bytephase-form__hp {
+    display: none !important;
+}
+
+.bytephase-form__hint {
+    margin-top: -0.7rem;
+    font-size: 0.82rem;
+    color: #667085;
+}
+
+.bytephase-form input[type="text"]:focus,
+.bytephase-form input[type="email"]:focus,
+.bytephase-form textarea:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.bytephase-form button[type="submit"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.35rem;
+    padding: 0.8rem 1.7rem;
+    border: 0;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.98rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.bytephase-form button[type="submit"]:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 26px -6px rgba(37, 99, 235, 0.6);
+}
+
+.bytephase-form button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.bytephase-form__notice {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+.bytephase-form__notice--ok {
+    background: linear-gradient(135deg, #ecfdf3, #d1fadf);
+    color: #027a48;
+    border: 1px solid #a6f4c5;
+}
+
+.bytephase-form__notice--error {
+    background: linear-gradient(135deg, #fef3f2, #fee4e2);
+    color: #b42318;
+    border: 1px solid #fecdca;
+}

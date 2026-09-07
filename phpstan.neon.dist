@@ -1,0 +1,12 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    # WP filters can return anything at runtime, so docblock types are hints,
+    # not guarantees — keep defensive instanceof/is_array guards un-flagged.
+    treatPhpDocTypesAsCertain: false

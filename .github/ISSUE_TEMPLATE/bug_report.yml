@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in the plugin does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems must **not** be reported here — email support@bytephase.com instead
+        (see [SECURITY.md](https://github.com/bytephase/bytephase-wordpress-plugin/blob/master/SECURITY.md)).
+
+        Questions about your BytePhase account, API key or field mapping are not plugin bugs —
+        use the [support forum](https://wordpress.org/support/plugin/bytephase-connector/).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did the plugin do instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Submit the form …
+        3. See …
+    validations:
+      required: true
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: input
+    id: wp-php
+    attributes:
+      label: WordPress and PHP versions
+      placeholder: "WordPress 6.8, PHP 8.2"
+    validations:
+      required: true
+  - type: input
+    id: form-plugin
+    attributes:
+      label: Which form
+      description: Native shortcode, Contact Form 7, Elementor Pro, or the generic hook.
+      placeholder: "Contact Form 7 6.0"
+  - type: textarea
+    id: health
+    attributes:
+      label: Health screen details
+      description: >
+        If a submission did not reach BytePhase, paste the request ID and error from
+        BytePhase → Health. Remove your API key and any customer details first.
+      render: text

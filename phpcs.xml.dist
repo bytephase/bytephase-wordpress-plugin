@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<ruleset name="BytePhase Connector">
+    <description>PSR-12 formatting + WordPress security/DB sniffs + PHP 8.1 compatibility.</description>
+
+    <file>bytephase-connector.php</file>
+    <file>uninstall.php</file>
+    <file>src</file>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <!-- House style is PSR-12 / PSR-4 (docs/ARCHITECTURE.md §2), so the WPCS
+         formatting rules don't apply here; we take WPCS's security and DB
+         sniffs — the ones the plugin review team actually cares about. -->
+    <rule ref="PSR12">
+        <!-- Every file pairs its declarations with a side effect by design: the entry file
+             and uninstall.php bootstrap, and each class file guards direct access with
+             `defined('ABSPATH') || exit;`. -->
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+        <!-- Long translatable strings and admin-template printf lines must not be broken mid-sentence. -->
+        <exclude name="Generic.Files.LineLength"/>
+    </rule>
+
+    <rule ref="WordPress.Security.EscapeOutput"/>
+    <rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+    <rule ref="WordPress.DB.PreparedSQL"/>
+
+    <!-- PHP compatibility against the declared floor. -->
+    <rule ref="PHPCompatibilityWP"/>
+    <config name="testVersion" value="8.1-"/>
+    <config name="minimum_wp_version" value="6.0"/>
+</ruleset>

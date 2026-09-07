@@ -1,0 +1,49 @@
+{
+    "name": "bytephase/wordpress-connector",
+    "description": "BytePhase Connector — send WordPress form submissions to BytePhase as Leads or Self Check-ins.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://bytephase.com/integrations/wordpress/",
+    "keywords": ["wordpress", "wordpress-plugin", "crm", "leads", "contact-form-7", "elementor", "repair-shop"],
+    "support": {
+        "issues": "https://github.com/bytephase/bytephase-wordpress-plugin/issues",
+        "forum": "https://wordpress.org/support/plugin/bytephase-connector/",
+        "source": "https://github.com/bytephase/bytephase-wordpress-plugin",
+        "docs": "https://bytephase.com/integrations/wordpress/"
+    },
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "brain/monkey": "^2.6",
+        "phpunit/phpunit": "^10.5 || ^11.0",
+        "squizlabs/php_codesniffer": "^3.10",
+        "phpstan/phpstan": "^2.0",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "wp-coding-standards/wpcs": "^3.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BytePhase\\Connector\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BytePhase\\Connector\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "phpcs": "phpcs",
+        "phpstan": "phpstan analyse"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}
