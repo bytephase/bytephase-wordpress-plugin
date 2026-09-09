@@ -99,7 +99,7 @@ final class FormsPage
             <div class="card bytephase-card">
                 <h2><?php esc_html_e('What is this for?', 'bytephase-connector'); ?></h2>
                 <p><?php esc_html_e('A form can become either a Lead (an enquiry to follow up) or a Self check-in (a repair booking). Choose once per form, and you can run both kinds side by side — an enquiry form on one page and a booking form on another.', 'bytephase-connector'); ?></p>
-                <p><?php esc_html_e('You still map the field names once in BytePhase. This page only decides which record each form creates.', 'bytephase-connector'); ?></p>
+                <p><?php esc_html_e('You still map the field names once in BytePhase. This page decides which record each form creates, and whether your BytePhase custom fields appear on the built-in forms.', 'bytephase-connector'); ?></p>
             </div>
 
             <h2><?php esc_html_e('Built-in forms', 'bytephase-connector'); ?></h2>

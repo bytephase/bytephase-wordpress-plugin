@@ -141,7 +141,7 @@ final class Plugin
             return;
         }
 
-        $content = '<p>' . esc_html__('When a visitor submits a form connected to BytePhase, the submitted details (such as name, email address, phone number, device information, and message) are transmitted to BytePhase (bytephase.com), the repair shop management service this website uses, so that the shop can respond to the enquiry.', 'bytephase-connector') . '</p>'
+        $content = '<p>' . esc_html__('When a visitor submits a form connected to BytePhase, the submitted details (such as name, email address, phone number, device information, message, and answers to any additional questions this shop has added to the form) are transmitted to BytePhase (bytephase.com), the repair shop management service this website uses, so that the shop can respond to the enquiry.', 'bytephase-connector') . '</p>'
             . '<p>' . esc_html__('Once a submission reaches BytePhase, this website does not keep the submitted details. A submission that cannot be delivered — for example while the connection is misconfigured — is held in this website\'s database until it is delivered, and in any case for no longer than 30 days, so that the enquiry is not lost. Separately, an operational delivery log (time, delivery status, and a technical request id — never the submitted content) is kept for up to 30 days.', 'bytephase-connector') . '</p>'
             . '<p>' . sprintf(
                 /* translators: %s: link to the BytePhase privacy policy */

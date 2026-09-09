@@ -196,6 +196,15 @@ final class SettingsPage
                         <?php
                         printf(
                             /* translators: %s: menu location */
+                            esc_html__('Want to ask more than the standard questions? Create the fields in BytePhase, then switch them on for the ready-made forms under %s.', 'bytephase-connector'),
+                            '<strong>BytePhase &rarr; Forms</strong>'
+                        );
+                        ?>
+                    </li>
+                    <li>
+                        <?php
+                        printf(
+                            /* translators: %s: menu location */
                             esc_html__('See what has been sent, and retry anything that failed, under %s.', 'bytephase-connector'),
                             '<strong>BytePhase &rarr; Health</strong>'
                         );

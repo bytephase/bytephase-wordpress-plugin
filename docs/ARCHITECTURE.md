@@ -67,6 +67,36 @@ what the plugin sends and what it must handle coming back.
 otherwise the destination configured for that `form_id`. The canonical field names a record ends up with
 live in BytePhase only — the plugin never references them, which is what keeps it a pure connector.
 
+### Custom field definitions (read-only)
+
+The one place the plugin *reads* from BytePhase rather than writing to it. It exists so the built-in
+forms can show the fields a shop has already defined, without the plugin ever holding a definition of
+its own.
+
+| Item | Value |
+|---|---|
+| Endpoint | `GET https://{your-bytephase-domain}/api/{store}/integrations/custom-fields` |
+| Auth | The same `X-Tenant` + `X-API-Key` headers as the submit call |
+| `?form_type=<type>` | `{ "form_type": "...", "fields": [ { field_name, field_type, placeholder, is_field_required, select_box_items } ] }` |
+| no query | `{ "form_types": [ { "form_type": "...", "field_count": n } ] }` — only types that have fields |
+| `field_type` | `Text`, `Number` or `Dropdown` |
+| Rate limit | shares the submit endpoint's 60/minute |
+
+The plugin caches a response for 12 hours and treats any failure as "no custom fields": a form renders
+without them rather than not rendering at all. Definitions are never stored as plugin settings — only
+the site's own choices are (see §7).
+
+Values travel back inside the normal submit body, as `data.custom_fields`:
+
+```json
+[{ "label": "Warranty status", "field_type": "Dropdown", "field_value": "In warranty",
+   "select_box_items": ["In warranty", "Out of warranty"] }]
+```
+
+This is the shape BytePhase's own screens write and render, so a field filled in on the website is
+indistinguishable from one a staff member typed. Anything the plugin sends that is not a known field is
+still absorbed as a custom field by BytePhase, which is what makes unmapped extras survive.
+
 ### Destination field contract (the rule every entry point must satisfy)
 
 BytePhase validates every record it creates, whatever created it. The rule that matters to this plugin:
@@ -143,6 +173,7 @@ bytephase-wordpress-plugin/
 │   │   ├── Envelope.php               # Submission → canonical JSON body for /submit
 │   │   ├── ApiResult.php              # typed outcome classified from the HTTP response
 │   │   ├── ApiClient.php              # WP HTTP API wrapper (SSL verify, timeout, headers)
+│   │   ├── CustomFieldCatalog.php     # the shop's field definitions, cached 12h; stale-safe
 │   │   ├── Dispatcher.php             # send once; log; queue only on retryable failure; retry worker
 │   │   ├── PendingSubmissions.php     # failed-only store (custom table) + WP-Cron backoff
 │   │   └── ActivityLog.php            # capped operational log (last 50 / 30 days)
@@ -156,7 +187,10 @@ bytephase-wordpress-plugin/
 │   └── Settings/
 │       ├── Settings.php               # connection data accessor (base url, tenant, submitUrl)
 │       ├── Credentials.php            # key storage (autoload=no), masked/never-redisplayed, never logged
+│       ├── CustomFields.php           # per-form: show or not, which form type, which fields published
+│       ├── FormDestinations.php       # per-form destination choice (lead / self check-in / ignore)
 │       ├── SettingsPage.php           # Connection screen + Test Connection
+│       ├── FormsPage.php              # Forms screen: destinations + custom fields
 │       └── HealthPage.php             # health/status/recent-activity/retry screen
 └── languages/                         # .pot
 ```
@@ -174,7 +208,16 @@ bytephase-wordpress-plugin/
   array), `meta` (ip/ua/page — operational). Nothing fancier than that.
 - **Envelope** — serialises a `Submission` → the exact `{form_id, destination?, data}` body. Single place
   the wire format lives. `data` is the raw fields, verbatim.
-- **API Client** — one `wp_remote_post` wrapper: base URL + tenant slug from settings, injects
+- **Custom Field Catalog** — reads the shop's field definitions from BytePhase and caches them in a
+  transient for 12 hours, because every visitor paying for a round trip would also burn the
+  integration's rate limit. A failed read returns nothing and caches nothing, so the next render
+  retries; a form never breaks because BytePhase is unreachable. Discards any definition it cannot
+  make sense of rather than rendering it.
+- **Custom Fields (settings)** — the site's decisions only: whether custom fields show on a form, which
+  form type they come from, and which of them are published. Labels, types, options and which are
+  required are never stored here — they are read from BytePhase every time, so a field is edited in one
+  place. Required fields are always published; withholding one would only produce a guaranteed 422.
+- **API Client** — one `wp_remote_post` wrapper plus a read-only `wp_remote_get` for definitions: base URL + tenant slug from settings, injects
   `X-API-Key`, `Idempotency-Key`, `Accept`; `sslverify=true`; bounded timeout; returns a typed result
   (created / duplicate / auth_error / validation_error / retryable / fatal) + `X-Request-Id`.
 - **Dispatcher** — orchestrates one submission: build envelope → attempt the HTTP request immediately →
@@ -245,15 +288,24 @@ bytephase-wordpress-plugin/
 
 ## 7. Admin Settings Design (≤5-minute setup)
 
-Single menu **"BytePhase"** with two tabs, plain language, no jargon:
+Single menu **"BytePhase"** with three screens, plain language, no jargon:
 
 - **Connection** — three fields: *BytePhase Web Address*, *Store ID (tenant slug)*, *API Key* (masked),
   and a big **Test Connection** button → green "Connected" or a friendly fix-it message. A short "Where do
   I find these?" link to BytePhase docs. That is the entire required setup **in WordPress**.
+- **Forms** — which record each form creates (Lead / Self check-in / don't send), and, per built-in
+  shortcode, the three custom field choices below.
 - **Health** — the operational dashboard in §13.
 
 **Field mapping is not configured in WordPress.** After connecting, the owner maps each form's fields once
 in BytePhase (keyed by `form_id`). The settings screen never shows or configures business data.
+
+**Custom fields are displayed, not defined.** The Forms screen decides three things per built-in form —
+whether custom fields show, which form type to pull them from, and which of them are published on a
+public page — and nothing else. Every property of a field is read from BytePhase (§"Custom field
+definitions"), so a shop edits a label, an option or a required flag in one place and the website
+follows. A **Refresh** action drops the 12-hour cache for a shop that has just added a field. When a
+form type has no fields yet, the screen says where to create them rather than showing an empty list.
 
 ## 8. Form Integration Strategy (Connectors) — mapping-first
 

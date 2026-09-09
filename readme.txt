@@ -38,8 +38,9 @@ Failed submissions (a network blip, BytePhase briefly unavailable) are retried a
 
 This plugin connects to **BytePhase** (bytephase.com), a repair shop management service, to deliver your website's form submissions to your BytePhase account. It is only useful if you have a BytePhase account.
 
-* **What is sent:** when a visitor submits a connected form, the submitted form fields (for example name, email address, phone number, device details, and message), together with a form identifier, are sent over HTTPS to the BytePhase API address you configured (your own BytePhase account).
-* **When it is sent:** only at the moment a connected form is submitted, and again if a failed delivery is retried. Nothing is sent while you browse your site or the WordPress admin.
+* **What is sent:** when a visitor submits a connected form, the submitted form fields (for example name, email address, phone number, device details, message, and any custom fields your shop has configured), together with a form identifier, are sent over HTTPS to the BytePhase API address you configured (your own BytePhase account).
+* **When it is sent:** only at the moment a connected form is submitted, and again if a failed delivery is retried.
+* **What is requested:** if you switch custom fields on, the plugin also asks BytePhase for their definitions — the field labels, types and options you created in your own account. This is a read-only request that sends no visitor data, and the answer is cached for 12 hours, so it happens at most twice a day per form type.
 * **What is stored in WordPress:** only an operational delivery log (time, status, request id) for up to 30 days — never the submitted customer details.
 
 BytePhase [terms and conditions](https://bytephase.com/terms-conditions/) and [privacy policy](https://bytephase.com/privacy-policy/).
