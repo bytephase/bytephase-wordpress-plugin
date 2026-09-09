@@ -209,6 +209,23 @@ Drop a shortcode into any page or post. Its fields are already canonical, so **n
 The native form enforces the required fields client-side of the API (name + at least one of
 email/mobile) and shows a friendly message if incomplete — so a bad submission never reaches BytePhase.
 
+**Custom fields.** Anything you have already created in BytePhase under *Settings → Custom fields* can
+be shown on these forms. The plugin never defines a field: it reads the definitions (label, type,
+options, required) from BytePhase and renders them, so a field is edited in one place.
+
+Under **BytePhase → Forms → Custom fields**, each shortcode gets three choices:
+
+| Choice | What it does |
+|---|---|
+| Show custom fields on this form | Off by default. Nothing renders until you turn it on. |
+| Pull definitions from | Which form type to read — `Lead` for the enquiry form, `Self check-in` for the booking form, by default. |
+| Which fields to publish | Tick the ones that belong on a public website. Required fields are always shown, because BytePhase rejects a submission without them. |
+
+Definitions are cached for 12 hours; **Refresh** on that screen pulls them again straight away. If
+BytePhase cannot be reached the form still renders — it simply shows no custom fields rather than
+failing. Values are sent in the same shape the app writes, so they appear on the lead or the check-in
+exactly like a field a staff member filled in.
+
 ### 6.2 Contact Form 7
 
 Just build a CF7 form. On successful submit (`wpcf7_mail_sent`) the connector forwards the posted

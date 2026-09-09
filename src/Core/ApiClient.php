@@ -43,6 +43,69 @@ class ApiClient
     }
 
     /**
+     * The shop's custom field definitions for one form type, or the list of form types
+     * that have any when $formType is null. Returns null when the call fails for any
+     * reason — the caller decides whether to fall back to a cached copy or to no fields
+     * at all, because a website form must never break because BytePhase is unreachable.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function customFields(?string $formType): ?array
+    {
+        $url = $this->settings->customFieldsUrl();
+
+        if ($url === '' || $this->credentials->apiKey() === '') {
+            return null;
+        }
+
+        if ($formType !== null && $formType !== '') {
+            $url = add_query_arg('form_type', rawurlencode($formType), $url);
+        }
+
+        $response = wp_remote_get($url, [
+            'timeout' => self::TIMEOUT,
+            'redirection' => 0,
+            'sslverify' => true,
+            'headers' => $this->headers(),
+        ]);
+
+        if (is_wp_error($response)) {
+            return null;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+
+        // The same standing the submit path tracks, so an expired key flips the Health
+        // screen to "Reconnect" even if the site has had no submissions since.
+        if ($code === 401) {
+            $this->settings->markAuthFailed();
+
+            return null;
+        }
+
+        if ($code !== 200) {
+            return null;
+        }
+
+        $decoded = json_decode(wp_remote_retrieve_body($response), true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function headers(): array
+    {
+        return [
+            'X-API-Key' => $this->credentials->apiKey(),
+            'X-Tenant' => $this->settings->tenantSlug(),
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+        ];
+    }
+
+    /**
      * @param  array<string, mixed>  $body
      */
     private function request(array $body, ?string $idempotencyKey): ApiResult
@@ -56,12 +119,7 @@ class ApiClient
             );
         }
 
-        $headers = [
-            'X-API-Key' => $this->credentials->apiKey(),
-            'X-Tenant' => $this->settings->tenantSlug(),
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ];
+        $headers = $this->headers();
 
         if ($idempotencyKey !== null) {
             $headers['Idempotency-Key'] = $idempotencyKey;

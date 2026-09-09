@@ -45,6 +45,23 @@ final class Settings
     }
 
     /**
+     * Read-only definitions endpoint: the shop's custom fields, so a website form can
+     * render the fields BytePhase already knows about instead of inventing its own.
+     */
+    public function customFieldsUrl(): string
+    {
+        if (! $this->isConfigured()) {
+            return '';
+        }
+
+        return sprintf(
+            '%s/api/%s/integrations/custom-fields',
+            untrailingslashit($this->baseUrl()),
+            rawurlencode($this->tenantSlug()),
+        );
+    }
+
+    /**
      * The connection stores the API host; the dashboard lives on the store's own host —
      * "shop.api.bytephase.com" signs in at "shop.bytephase.com". A white-label domain has
      * no ".api." label and is returned unchanged.

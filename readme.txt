@@ -75,6 +75,13 @@ The plugin transmits form submissions to BytePhase and stores no customer detail
 
 Give every Elementor form a **unique Form Name** and avoid renaming it later. The form name identifies the form to BytePhase — two forms with the same name are treated as one, and renaming a form means re-mapping it in BytePhase.
 
+= Can I add my own fields to the built-in forms? =
+
+Yes. Create them in BytePhase under Settings → Custom fields, then switch them on under BytePhase →
+Forms → Custom fields in WordPress. The plugin reads the labels, types, dropdown options and which
+are required from BytePhase, so you edit a field in one place and the website follows. You choose
+which of them are published on the public form.
+
 = Does it work with caching plugins? =
 
 Yes. The built-in forms are designed to keep working on cached pages, and submissions themselves are never cached.

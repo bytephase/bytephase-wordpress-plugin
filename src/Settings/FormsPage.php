@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace BytePhase\Connector\Settings;
 
 use BytePhase\Connector\Core\ActivityLog;
+use BytePhase\Connector\Core\CustomFieldCatalog;
 
 defined('ABSPATH') || exit;
 
@@ -22,6 +23,7 @@ final class FormsPage
 
     private const CAPABILITY = 'manage_options';
     private const SAVE_ACTION = 'bytephase_save_forms';
+    private const REFRESH_ACTION = 'bytephase_refresh_custom_fields';
 
     /** Set by add_submenu_page(); identifies this screen inside admin_enqueue_scripts. */
     private string $hookSuffix = '';
@@ -29,6 +31,9 @@ final class FormsPage
     public function __construct(
         private readonly FormDestinations $destinations,
         private readonly ActivityLog $log,
+        private readonly CustomFields $customFields,
+        private readonly CustomFieldCatalog $catalog,
+        private readonly Settings $settings,
     ) {
     }
 
@@ -37,6 +42,7 @@ final class FormsPage
         add_action('admin_menu', [$this, 'registerMenu']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('admin_post_' . self::SAVE_ACTION, [$this, 'handleSave']);
+        add_action('admin_post_' . self::REFRESH_ACTION, [$this, 'handleRefresh']);
     }
 
     public function registerMenu(): void
@@ -85,6 +91,11 @@ final class FormsPage
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Form settings saved.', 'bytephase-connector'); ?></p></div>
             <?php endif; ?>
 
+            <?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only flag from our own post-redirect-get; it only picks which notice to show. ?>
+            <?php if (isset($_GET['refreshed'])) : ?>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Custom fields refreshed from BytePhase.', 'bytephase-connector'); ?></p></div>
+            <?php endif; ?>
+
             <div class="card bytephase-card">
                 <h2><?php esc_html_e('What is this for?', 'bytephase-connector'); ?></h2>
                 <p><?php esc_html_e('A form can become either a Lead (an enquiry to follow up) or a Self check-in (a repair booking). Choose once per form, and you can run both kinds side by side — an enquiry form on one page and a booking form on another.', 'bytephase-connector'); ?></p>
@@ -113,6 +124,8 @@ final class FormsPage
             <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                 <input type="hidden" name="action" value="<?php echo esc_attr(self::SAVE_ACTION); ?>">
                 <?php wp_nonce_field(self::SAVE_ACTION); ?>
+
+                <?php $this->renderCustomFieldsSection(); ?>
 
                 <h2><?php esc_html_e('Your other forms', 'bytephase-connector'); ?></h2>
                 <?php if ($builder === []) : ?>
@@ -157,8 +170,9 @@ final class FormsPage
                         </tbody>
                     </table>
 
-                    <?php submit_button(__('Save form settings', 'bytephase-connector')); ?>
                 <?php endif; ?>
+
+                <?php submit_button(__('Save form settings', 'bytephase-connector')); ?>
             </form>
         </div>
         <?php
@@ -192,8 +206,172 @@ final class FormsPage
 
         $this->destinations->save($map);
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above runs before anything is read.
+        $customFields = isset($_POST['custom_fields']) && is_array($_POST['custom_fields'])
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized inside CustomFields::save().
+            ? wp_unslash($_POST['custom_fields'])
+            : [];
+
+        $this->customFields->save($customFields);
+
         wp_safe_redirect(add_query_arg('saved', '1', admin_url('admin.php?page=' . self::PAGE_SLUG)));
         exit;
+    }
+
+    /**
+     * Drop the cached definitions so the next page load asks BytePhase again. Exists
+     * because a shop that has just added a field should not have to wait out the cache.
+     */
+    public function handleRefresh(): void
+    {
+        if (! current_user_can(self::CAPABILITY)) {
+            wp_die(esc_html__('You are not allowed to do this.', 'bytephase-connector'));
+        }
+
+        check_admin_referer(self::REFRESH_ACTION);
+
+        $this->catalog->forget();
+
+        wp_safe_redirect(add_query_arg('refreshed', '1', admin_url('admin.php?page=' . self::PAGE_SLUG)));
+        exit;
+    }
+
+    /**
+     * Custom fields are defined in BytePhase and only displayed here, so this section
+     * decides three things and nothing else: whether they appear, which form type they
+     * come from, and which of them are published on the public form.
+     */
+    private function renderCustomFieldsSection(): void
+    {
+        $shortcodes = [
+            FormDestinations::LEAD => '[bytephase_lead_form]',
+            FormDestinations::SELF_CHECKIN => '[bytephase_self_checkin]',
+        ];
+
+        $formTypes = $this->catalog->formTypes();
+        ?>
+        <h2><?php esc_html_e('Custom fields', 'bytephase-connector'); ?></h2>
+        <p class="description">
+            <?php esc_html_e('Show the custom fields you have already created in BytePhase on the built-in forms. Labels, types, options and which are required are managed in BytePhase — this page only decides whether they appear on your website.', 'bytephase-connector'); ?>
+        </p>
+
+        <?php foreach ($shortcodes as $destination => $shortcode) : ?>
+            <?php
+            $config = $this->customFields->config($destination);
+            $definitions = $this->catalog->fields($config['form_type']);
+            $syncedAt = $this->catalog->syncedAt($config['form_type']);
+            $choices = $formTypes;
+
+            if (! in_array($config['form_type'], $choices, true)) {
+                $choices[] = $config['form_type'];
+            }
+
+            sort($choices);
+            ?>
+            <div class="card bytephase-card">
+                <h3>
+                    <?php echo esc_html($this->destinationLabel((string) $destination)); ?>
+                    <code><?php echo esc_html($shortcode); ?></code>
+                </h3>
+
+                <?php // Marks this screen as saved, so unticking every field means "none", not "all". ?>
+                <input type="hidden" name="custom_fields[<?php echo esc_attr((string) $destination); ?>][configured]" value="1">
+
+                <p>
+                    <label>
+                        <input type="checkbox"
+                            name="custom_fields[<?php echo esc_attr((string) $destination); ?>][enabled]"
+                            value="1"<?php checked($config['enabled']); ?>>
+                        <?php esc_html_e('Show custom fields on this form', 'bytephase-connector'); ?>
+                    </label>
+                </p>
+
+                <p>
+                    <label>
+                        <?php esc_html_e('Pull definitions from', 'bytephase-connector'); ?>
+                        <select name="custom_fields[<?php echo esc_attr((string) $destination); ?>][form_type]">
+                            <?php foreach ($choices as $choice) : ?>
+                                <option value="<?php echo esc_attr($choice); ?>"<?php selected($config['form_type'], $choice); ?>>
+                                    <?php echo esc_html($choice); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                </p>
+
+                <?php if ($definitions === []) : ?>
+                    <p>
+                        <?php
+                        printf(
+                            /* translators: %s: the custom field form type, e.g. "Lead". */
+                            esc_html__('No custom fields for "%s" yet. Create them in BytePhase under Settings → Custom fields, choose that form type, then refresh.', 'bytephase-connector'),
+                            esc_html($config['form_type']),
+                        );
+                        ?>
+                        <?php if ($this->settings->dashboardUrl() !== '') : ?>
+                            <a href="<?php echo esc_url($this->settings->dashboardUrl()); ?>" target="_blank" rel="noopener noreferrer">
+                                <?php esc_html_e('Open BytePhase', 'bytephase-connector'); ?>
+                            </a>
+                        <?php endif; ?>
+                    </p>
+                <?php else : ?>
+                    <p><?php esc_html_e('Fields found in BytePhase — tick the ones to publish on this form:', 'bytephase-connector'); ?></p>
+                    <ul>
+                        <?php foreach ($definitions as $definition) : ?>
+                            <?php $required = ! empty($definition['is_field_required']); ?>
+                            <li>
+                                <label>
+                                    <input type="checkbox"
+                                        name="custom_fields[<?php echo esc_attr((string) $destination); ?>][fields][]"
+                                        value="<?php echo esc_attr((string) $definition['field_name']); ?>"
+                                        <?php checked($required || (! $config['configured'] && $config['fields'] === []) || in_array((string) $definition['field_name'], $config['fields'], true)); ?>
+                                        <?php disabled($required); ?>>
+                                    <?php echo esc_html((string) $definition['field_name']); ?>
+                                    <span class="description">
+                                        <?php echo esc_html((string) $definition['field_type']); ?><?php echo $required ? esc_html__(' — required', 'bytephase-connector') : ''; ?>
+                                    </span>
+                                </label>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php if ($this->hasRequiredField($definitions)) : ?>
+                        <p class="description"><?php esc_html_e('Required fields are always shown — BytePhase rejects a submission without them.', 'bytephase-connector'); ?></p>
+                    <?php endif; ?>
+                <?php endif; ?>
+
+                <p class="description">
+                    <?php if ($syncedAt !== null) : ?>
+                        <?php
+                        printf(
+                            /* translators: %s: human readable time difference, e.g. "2 hours". */
+                            esc_html__('Last checked %s ago.', 'bytephase-connector'),
+                            esc_html(human_time_diff($syncedAt)),
+                        );
+                        ?>
+                    <?php else : ?>
+                        <?php esc_html_e('Not checked yet — connect BytePhase on the Connection screen first.', 'bytephase-connector'); ?>
+                    <?php endif; ?>
+                    <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=' . self::REFRESH_ACTION), self::REFRESH_ACTION)); ?>">
+                        <?php esc_html_e('Refresh', 'bytephase-connector'); ?>
+                    </a>
+                </p>
+            </div>
+        <?php endforeach; ?>
+        <?php
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $definitions
+     */
+    private function hasRequiredField(array $definitions): bool
+    {
+        foreach ($definitions as $definition) {
+            if (! empty($definition['is_field_required'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

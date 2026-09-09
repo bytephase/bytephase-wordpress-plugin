@@ -11,9 +11,11 @@ use BytePhase\Connector\Connectors\GenericConnector;
 use BytePhase\Connector\Connectors\NativeConnector;
 use BytePhase\Connector\Core\ActivityLog;
 use BytePhase\Connector\Core\ApiClient;
+use BytePhase\Connector\Core\CustomFieldCatalog;
 use BytePhase\Connector\Core\Dispatcher;
 use BytePhase\Connector\Core\PendingSubmissions;
 use BytePhase\Connector\Settings\Credentials;
+use BytePhase\Connector\Settings\CustomFields;
 use BytePhase\Connector\Settings\FormDestinations;
 use BytePhase\Connector\Settings\FormsPage;
 use BytePhase\Connector\Settings\HealthPage;
@@ -56,13 +58,15 @@ final class Plugin
         $pending = new PendingSubmissions();
         $dispatcher = new Dispatcher($client, $pending, $log);
         $destinations = new FormDestinations();
+        $customFields = new CustomFields();
+        $catalog = new CustomFieldCatalog($client);
 
         (new ConnectorRegistry(
             new GenericConnector($dispatcher, $destinations),
             new Cf7Connector($dispatcher, $destinations),
             new ElementorConnector($dispatcher, $destinations),
             // The shortcodes carry their own destination, so they need no choice.
-            new NativeConnector($dispatcher),
+            new NativeConnector($dispatcher, $customFields, $catalog),
         ))->boot();
 
         add_filter('cron_schedules', [$this, 'registerSchedule']);
@@ -75,7 +79,7 @@ final class Plugin
 
         if (is_admin()) {
             (new SettingsPage($settings, $credentials, $client))->boot();
-            (new FormsPage($destinations, $log))->boot();
+            (new FormsPage($destinations, $log, $customFields, $catalog, $settings))->boot();
             (new HealthPage($settings, $credentials, $log, $pending))->boot();
 
             add_action('admin_init', [$this, 'maybeRedirectAfterActivation']);

@@ -6,9 +6,12 @@ namespace BytePhase\Connector\Tests\Connectors;
 
 use Brain\Monkey\Functions;
 use BytePhase\Connector\Connectors\NativeConnector;
+use BytePhase\Connector\Core\ApiClient;
 use BytePhase\Connector\Core\ApiResult;
+use BytePhase\Connector\Core\CustomFieldCatalog;
 use BytePhase\Connector\Core\Dispatcher;
 use BytePhase\Connector\Core\Submission;
+use BytePhase\Connector\Settings\CustomFields;
 use BytePhase\Connector\Tests\Support\RedirectStop;
 use BytePhase\Connector\Tests\TestCase;
 use Mockery;
@@ -23,6 +26,9 @@ final class NativeConnectorTest extends TestCase
         parent::setUp();
 
         $this->dispatcher = Mockery::mock(Dispatcher::class);
+
+        // Custom fields are off unless a test says otherwise; see NativeConnectorCustomFieldsTest.
+        Functions\when('get_option')->justReturn([]);
 
         Functions\when('wp_unslash')->returnArg();
         Functions\when('sanitize_text_field')->alias(static fn ($value): string => trim(strip_tags((string) $value)));
@@ -179,7 +185,11 @@ final class NativeConnectorTest extends TestCase
     private function submit(): string
     {
         try {
-            (new NativeConnector($this->dispatcher))->handleSubmit();
+            (new NativeConnector(
+                $this->dispatcher,
+                new CustomFields(),
+                new CustomFieldCatalog(Mockery::mock(ApiClient::class)),
+            ))->handleSubmit();
         } catch (RedirectStop $stop) {
             parse_str((string) parse_url($stop->url, PHP_URL_QUERY), $query);
 

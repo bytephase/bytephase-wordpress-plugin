@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace BytePhase\Connector\Connectors;
 
+use BytePhase\Connector\Core\CustomFieldCatalog;
 use BytePhase\Connector\Core\Dispatcher;
 use BytePhase\Connector\Core\Submission;
+use BytePhase\Connector\Settings\CustomFields;
 
 defined('ABSPATH') || exit;
 
@@ -40,8 +42,11 @@ final class NativeConnector implements Connector
         'comment' => 'textarea',
     ];
 
-    public function __construct(private readonly Dispatcher $dispatcher)
-    {
+    public function __construct(
+        private readonly Dispatcher $dispatcher,
+        private readonly CustomFields $customFields,
+        private readonly CustomFieldCatalog $catalog,
+    ) {
     }
 
     public function slug(): string
@@ -145,6 +150,18 @@ final class NativeConnector implements Connector
             $this->redirect('invalid');
         }
 
+        $custom = $this->collectCustomFields($destination);
+
+        // A required custom field is required by BytePhase too, so catching it here saves
+        // a round trip that could only ever come back 422.
+        if ($custom['missing']) {
+            $this->redirect('invalid');
+        }
+
+        if ($custom['values'] !== []) {
+            $data['custom_fields'] = $custom['values'];
+        }
+
         $result = $this->dispatcher->dispatch(
             new Submission('wordpress', 'native-' . $destination, $data, $destination),
         );
@@ -178,6 +195,108 @@ final class NativeConnector implements Connector
         // phpcs:enable WordPress.Security.NonceVerification.Missing
 
         return $data;
+    }
+
+    /**
+     * The custom fields this form publishes: the shop's definitions from BytePhase,
+     * narrowed to the ones it chose to show. Empty whenever the feature is switched off,
+     * nothing is defined, or BytePhase could not be reached.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function customFieldDefinitions(string $destination): array
+    {
+        if (! $this->customFields->isEnabled($destination)) {
+            return [];
+        }
+
+        return $this->customFields->published(
+            $destination,
+            $this->catalog->fields($this->customFields->formType($destination)),
+        );
+    }
+
+    /**
+     * @return array{values: array<int, array<string, mixed>>, missing: bool}
+     */
+    private function collectCustomFields(string $destination): array
+    {
+        $definitions = $this->customFieldDefinitions($destination);
+
+        if ($definitions === []) {
+            return ['values' => [], 'missing' => false];
+        }
+
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- public, logged-out form with no privileged action; see the class docblock.
+        $submitted = isset($_POST['bytephase_cf']) && is_array($_POST['bytephase_cf'])
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- each value is sanitized per field below.
+            ? wp_unslash($_POST['bytephase_cf'])
+            : [];
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
+
+        $values = [];
+        $missing = false;
+
+        foreach ($definitions as $definition) {
+            $name = (string) $definition['field_name'];
+            $value = sanitize_text_field((string) ($submitted[$name] ?? ''));
+
+            // Accept only what the shop defined: a dropdown that took free text would
+            // put values into BytePhase that its own screens never offer.
+            if ($definition['field_type'] === 'Dropdown'
+                && $value !== ''
+                && ! in_array($value, $definition['select_box_items'], true)) {
+                $value = '';
+            }
+
+            if ($definition['field_type'] === 'Number' && $value !== '' && ! is_numeric($value)) {
+                $value = '';
+            }
+
+            if ($value === '') {
+                $missing = $missing || ! empty($definition['is_field_required']);
+
+                continue;
+            }
+
+            $values[] = [
+                'label' => $name,
+                'field_type' => $definition['field_type'],
+                'field_value' => $value,
+                'select_box_items' => $definition['select_box_items'] !== [] ? $definition['select_box_items'] : null,
+            ];
+        }
+
+        return ['values' => $values, 'missing' => $missing];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $definitions
+     */
+    private function renderCustomFields(array $definitions): void
+    {
+        foreach ($definitions as $definition) {
+            $name = (string) $definition['field_name'];
+            $required = ! empty($definition['is_field_required']);
+            $placeholder = (string) $definition['placeholder'];
+            ?>
+            <p><label><?php echo esc_html($name); ?><?php echo $required ? ' *' : ''; ?>
+                <?php if ($definition['field_type'] === 'Dropdown') : ?>
+                    <select name="bytephase_cf[<?php echo esc_attr($name); ?>]"<?php echo $required ? ' required' : ''; ?>>
+                        <option value=""><?php echo esc_html($placeholder !== '' ? $placeholder : __('Select…', 'bytephase-connector')); ?></option>
+                        <?php foreach ($definition['select_box_items'] as $item) : ?>
+                            <option value="<?php echo esc_attr((string) $item); ?>"><?php echo esc_html((string) $item); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else : ?>
+                    <input type="<?php echo $definition['field_type'] === 'Number' ? 'number' : 'text'; ?>"
+                        name="bytephase_cf[<?php echo esc_attr($name); ?>]"
+                        <?php echo $placeholder !== '' ? 'placeholder="' . esc_attr($placeholder) . '"' : ''; ?>
+                        <?php echo $required ? 'required' : ''; ?>>
+                <?php endif; ?>
+            </label></p>
+            <?php
+        }
     }
 
     private function renderForm(string $destination, string $heading, string $button, bool $withSerial = false): string
@@ -227,6 +346,8 @@ final class NativeConnector implements Connector
                 <p><label><?php esc_html_e('Serial number', 'bytephase-connector'); ?>
                     <input type="text" name="serial_number"></label></p>
             <?php endif; ?>
+            <?php $this->renderCustomFields($this->customFieldDefinitions($destination)); ?>
+
             <p><label><?php esc_html_e('Message', 'bytephase-connector'); ?>
                 <textarea name="comment" rows="4"></textarea></label></p>
 
