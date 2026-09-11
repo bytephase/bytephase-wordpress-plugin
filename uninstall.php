@@ -31,12 +31,15 @@ defined('WP_UNINSTALL_PLUGIN') || exit;
 
     global $wpdb;
 
+    // Transients (fresh copies and failure markers) share the bytephase_connector_cf_ prefix;
+    // the last good copy of each form type is an option, so it needs its own pattern.
     // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- transients have no wildcard API; this is the documented way to clear a family of them on uninstall.
     $wpdb->query(
         $wpdb->prepare(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s OR option_name LIKE %s",
             $wpdb->esc_like('_transient_bytephase_connector_cf_') . '%',
             $wpdb->esc_like('_transient_timeout_bytephase_connector_cf_') . '%',
+            $wpdb->esc_like('bytephase_connector_cf_last_') . '%',
         )
     );
 

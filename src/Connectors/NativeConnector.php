@@ -243,9 +243,11 @@ final class NativeConnector implements Connector
 
             // Accept only what the shop defined: a dropdown that took free text would
             // put values into BytePhase that its own screens never offer.
-            if ($definition['field_type'] === 'Dropdown'
+            if (
+                $definition['field_type'] === 'Dropdown'
                 && $value !== ''
-                && ! in_array($value, $definition['select_box_items'], true)) {
+                && ! in_array($value, $definition['select_box_items'], true)
+            ) {
                 $value = '';
             }
 

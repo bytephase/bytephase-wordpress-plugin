@@ -107,16 +107,99 @@ final class CustomFieldCatalogTest extends TestCase
         $this->assertSame([], $fields[0]['select_box_items']);
     }
 
-    public function test_an_unreachable_bytephase_yields_no_fields_and_caches_nothing(): void
+    public function test_an_unreachable_bytephase_yields_no_fields_when_nothing_was_ever_cached(): void
     {
-        $this->client->shouldReceive('customFields')->twice()->andReturn(null);
+        // once(): the Forms screen reads fields() and syncedAt() together; that is one
+        // round trip, and a failed one is not repeated within the same request.
+        $this->client->shouldReceive('customFields')->once()->andReturn(null);
 
         $catalog = new CustomFieldCatalog($this->client);
 
         $this->assertSame([], $catalog->fields('Lead'));
         $this->assertNull($catalog->syncedAt('Lead'));
-        // Nothing was cached, so the next render retries instead of serving an empty form.
         $this->assertSame([], $catalog->fields('Lead'));
+    }
+
+    public function test_a_failure_is_not_retried_by_every_visitor(): void
+    {
+        // The public form reads the catalog on every page view. During an outage each of
+        // those would otherwise wait out ApiClient's timeout, so one failure must hold
+        // off the next views — each of which builds its own catalog.
+        $this->client->shouldReceive('customFields')->once()->andReturn(null);
+
+        (new CustomFieldCatalog($this->client))->fields('Lead');
+        (new CustomFieldCatalog($this->client))->fields('Lead');
+        (new CustomFieldCatalog($this->client))->fields('Lead');
+    }
+
+    public function test_bytephase_is_asked_again_once_the_failure_window_passes(): void
+    {
+        $this->client->shouldReceive('customFields')->twice()->with('Lead')->andReturn(null, [
+            'fields' => [['field_name' => 'Warranty status', 'field_type' => 'Text']],
+        ]);
+
+        $this->assertSame([], (new CustomFieldCatalog($this->client))->fields('Lead'));
+
+        // The failure marker is a transient; simulate its expiry.
+        foreach (array_keys($this->transients) as $key) {
+            if (str_starts_with($key, 'bytephase_connector_cf_fail_')) {
+                unset($this->transients[$key]);
+            }
+        }
+
+        $this->assertCount(1, (new CustomFieldCatalog($this->client))->fields('Lead'));
+    }
+
+    public function test_a_failed_refresh_keeps_serving_the_last_good_copy(): void
+    {
+        $this->client->shouldReceive('customFields')->twice()->with('Lead')->andReturn([
+            'fields' => [['field_name' => 'Warranty status', 'field_type' => 'Text']],
+        ], null);
+
+        $first = new CustomFieldCatalog($this->client);
+        $first->fields('Lead');
+        $fetchedAt = $first->syncedAt('Lead');
+
+        // The fresh copy has expired (its TTL passed) and BytePhase is now unreachable.
+        foreach (array_keys($this->transients) as $key) {
+            if (str_starts_with($key, 'bytephase_connector_cf_') && $key !== 'bytephase_connector_cf_types') {
+                unset($this->transients[$key]);
+            }
+        }
+
+        $later = new CustomFieldCatalog($this->client);
+
+        // Yesterday's labels, not an empty form — and syncedAt() still reports when that
+        // copy was fetched, so the Forms screen can show it is stale.
+        $this->assertSame('Warranty status', $later->fields('Lead')[0]['field_name']);
+        $this->assertSame($fetchedAt, $later->syncedAt('Lead'));
+    }
+
+    public function test_an_unreachable_bytephase_is_not_asked_for_form_types_on_every_load(): void
+    {
+        $this->client->shouldReceive('customFields')->once()->with(null)->andReturn(null);
+
+        $this->assertSame([], (new CustomFieldCatalog($this->client))->formTypes());
+        $this->assertSame([], (new CustomFieldCatalog($this->client))->formTypes());
+    }
+
+    public function test_refreshing_drops_the_last_good_copy_along_with_everything_else(): void
+    {
+        // forget() runs when the connection changes; a copy from the old connection is
+        // wrong for the new one, so it must not be served even if the next fetch fails.
+        $this->client->shouldReceive('customFields')->twice()->with('Lead')->andReturn([
+            'fields' => [['field_name' => 'Warranty status', 'field_type' => 'Text']],
+        ], null);
+
+        $catalog = new CustomFieldCatalog($this->client);
+        $catalog->fields('Lead');
+        $catalog->forget();
+
+        $this->assertSame([], $catalog->fields('Lead'));
+        $this->assertSame([], array_filter(
+            array_keys($this->options),
+            fn (string $key): bool => str_starts_with($key, 'bytephase_connector_cf_last_'),
+        ));
     }
 
     public function test_it_lists_only_the_form_types_that_have_fields(): void
