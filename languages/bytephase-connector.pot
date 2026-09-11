@@ -2,21 +2,21 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: BytePhase Connector 1.0.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/bytephase-connector\n"
+"Project-Id-Version: BytePhase Connector 1.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/app\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-01T12:25:23+00:00\n"
+"POT-Creation-Date: 2026-09-11T08:30:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: bytephase-connector\n"
 
 #. Plugin Name of the plugin
 #: bytephase-connector.php
-#: src/Plugin.php:149
+#: src/Plugin.php:153
 msgid "BytePhase Connector"
 msgstr ""
 
@@ -42,195 +42,256 @@ msgstr ""
 msgid "https://bytephase.com"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:96
+#: src/Connectors/NativeConnector.php:101
 msgid "Send an enquiry"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:97
-#: src/Connectors/NativeConnector.php:110
+#: src/Connectors/NativeConnector.php:102
+#: src/Connectors/NativeConnector.php:115
 msgid "Submit"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:109
+#: src/Connectors/NativeConnector.php:114
 msgid "Book a repair"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:198
+#: src/Connectors/NativeConnector.php:288
+msgid "Select…"
+msgstr ""
+
+#: src/Connectors/NativeConnector.php:319
 msgid "Thanks — we have received your details."
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:200
+#: src/Connectors/NativeConnector.php:321
 msgid "Please enter your name and at least a mobile number or email."
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:202
+#: src/Connectors/NativeConnector.php:323
 msgid "Sorry, something went wrong. Please try again."
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:210
+#: src/Connectors/NativeConnector.php:331
 msgid "Leave this field empty"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:215
+#: src/Connectors/NativeConnector.php:336
 msgid "Name"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:217
+#: src/Connectors/NativeConnector.php:338
 msgid "Mobile number"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:219
+#: src/Connectors/NativeConnector.php:340
 msgid "Email"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:221
+#: src/Connectors/NativeConnector.php:342
 msgid "Enter at least a mobile number or an email."
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:222
+#: src/Connectors/NativeConnector.php:343
 msgid "Device brand"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:224
+#: src/Connectors/NativeConnector.php:345
 msgid "Device model"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:227
+#: src/Connectors/NativeConnector.php:348
 msgid "Serial number"
 msgstr ""
 
-#: src/Connectors/NativeConnector.php:230
+#: src/Connectors/NativeConnector.php:353
 msgid "Message"
 msgstr ""
 
-#: src/Core/ApiClient.php:55
+#: src/Core/ApiClient.php:118
 msgid "BytePhase is not connected yet — add your API address, store ID and API key."
 msgstr ""
 
-#: src/Plugin.php:124
+#: src/Plugin.php:128
 msgid "Docs"
 msgstr ""
 
-#: src/Plugin.php:125
+#: src/Plugin.php:129
 msgid "Support"
 msgstr ""
 
-#: src/Plugin.php:140
-msgid "When a visitor submits a form connected to BytePhase, the submitted details (such as name, email address, phone number, device information, and message) are transmitted to BytePhase (bytephase.com), the repair shop management service this website uses, so that the shop can respond to the enquiry."
+#: src/Plugin.php:144
+msgid "When a visitor submits a form connected to BytePhase, the submitted details (such as name, email address, phone number, device information, message, and answers to any additional questions this shop has added to the form) are transmitted to BytePhase (bytephase.com), the repair shop management service this website uses, so that the shop can respond to the enquiry."
 msgstr ""
 
-#: src/Plugin.php:141
+#: src/Plugin.php:145
 msgid "Once a submission reaches BytePhase, this website does not keep the submitted details. A submission that cannot be delivered — for example while the connection is misconfigured — is held in this website's database until it is delivered, and in any case for no longer than 30 days, so that the enquiry is not lost. Separately, an operational delivery log (time, delivery status, and a technical request id — never the submitted content) is kept for up to 30 days."
 msgstr ""
 
 #. translators: %s: link to the BytePhase privacy policy
-#: src/Plugin.php:144
+#: src/Plugin.php:148
 #, php-format
 msgid "Data transmitted to BytePhase is handled according to the BytePhase privacy policy: %s"
 msgstr ""
 
-#: src/Plugin.php:162
+#: src/Plugin.php:166
 msgid "Connect"
 msgstr ""
 
-#: src/Plugin.php:175
+#: src/Plugin.php:179
 msgid "Every five minutes (BytePhase)"
 msgstr ""
 
-#: src/Settings/FormsPage.php:46
-#: src/Settings/FormsPage.php:47
+#: src/Settings/FormsPage.php:52
+#: src/Settings/FormsPage.php:53
 msgid "Forms"
 msgstr ""
 
-#: src/Settings/FormsPage.php:81
+#: src/Settings/FormsPage.php:87
 msgid "BytePhase Forms"
 msgstr ""
 
-#: src/Settings/FormsPage.php:85
+#: src/Settings/FormsPage.php:91
 msgid "Form settings saved."
 msgstr ""
 
-#: src/Settings/FormsPage.php:89
+#: src/Settings/FormsPage.php:96
+msgid "Custom fields refreshed from BytePhase."
+msgstr ""
+
+#: src/Settings/FormsPage.php:100
 msgid "What is this for?"
 msgstr ""
 
-#: src/Settings/FormsPage.php:90
+#: src/Settings/FormsPage.php:101
 msgid "A form can become either a Lead (an enquiry to follow up) or a Self check-in (a repair booking). Choose once per form, and you can run both kinds side by side — an enquiry form on one page and a booking form on another."
 msgstr ""
 
-#: src/Settings/FormsPage.php:91
-msgid "You still map the field names once in BytePhase. This page only decides which record each form creates."
+#: src/Settings/FormsPage.php:102
+msgid "You still map the field names once in BytePhase. This page decides which record each form creates, and whether your BytePhase custom fields appear on the built-in forms."
 msgstr ""
 
-#: src/Settings/FormsPage.php:94
+#: src/Settings/FormsPage.php:105
 msgid "Built-in forms"
 msgstr ""
 
-#: src/Settings/FormsPage.php:95
+#: src/Settings/FormsPage.php:106
 msgid "These are fixed — the shortcode you paste decides the destination. Use both if you want both kinds."
 msgstr ""
 
-#: src/Settings/FormsPage.php:98
+#: src/Settings/FormsPage.php:109
 msgid "Shortcode"
 msgstr ""
 
-#: src/Settings/FormsPage.php:99
-#: src/Settings/FormsPage.php:125
+#: src/Settings/FormsPage.php:110
+#: src/Settings/FormsPage.php:138
 msgid "Creates"
 msgstr ""
 
-#: src/Settings/FormsPage.php:117
+#: src/Settings/FormsPage.php:130
 msgid "Your other forms"
 msgstr ""
 
-#: src/Settings/FormsPage.php:119
+#: src/Settings/FormsPage.php:132
 msgid "No Contact Form 7, Elementor or theme forms found yet. Submit one once and it will appear here."
 msgstr ""
 
-#: src/Settings/FormsPage.php:123
+#: src/Settings/FormsPage.php:136
 #: src/Settings/HealthPage.php:210
 msgid "Form"
 msgstr ""
 
-#: src/Settings/FormsPage.php:124
+#: src/Settings/FormsPage.php:137
 msgid "Source"
 msgstr ""
 
-#: src/Settings/FormsPage.php:142
+#: src/Settings/FormsPage.php:155
 msgid "Let BytePhase decide"
 msgstr ""
 
-#: src/Settings/FormsPage.php:151
+#: src/Settings/FormsPage.php:164
 msgid "Do not send to BytePhase"
 msgstr ""
 
-#: src/Settings/FormsPage.php:160
+#: src/Settings/FormsPage.php:175
 msgid "Save form settings"
 msgstr ""
 
-#: src/Settings/FormsPage.php:170
+#: src/Settings/FormsPage.php:184
+#: src/Settings/FormsPage.php:228
 #: src/Settings/HealthPage.php:145
-#: src/Settings/SettingsPage.php:280
+#: src/Settings/SettingsPage.php:289
 msgid "You are not allowed to do this."
 msgstr ""
 
-#: src/Settings/FormsPage.php:309
-msgid "Lead (an enquiry)"
+#: src/Settings/FormsPage.php:253
+msgid "Custom fields"
 msgstr ""
 
-#: src/Settings/FormsPage.php:310
-msgid "Self check-in (a repair booking)"
+#: src/Settings/FormsPage.php:255
+msgid "Show the custom fields you have already created in BytePhase on the built-in forms. Labels, types, options and which are required are managed in BytePhase — this page only decides whether they appear on your website."
 msgstr ""
 
-#: src/Settings/FormsPage.php:316
-msgid "Contact Form 7"
+#: src/Settings/FormsPage.php:285
+msgid "Show custom fields on this form"
 msgstr ""
 
-#: src/Settings/FormsPage.php:317
-msgid "Elementor"
+#: src/Settings/FormsPage.php:291
+msgid "Pull definitions from"
+msgstr ""
+
+#. translators: %s: the custom field form type, e.g. "Lead".
+#: src/Settings/FormsPage.php:307
+#, php-format
+msgid "No custom fields for \"%s\" yet. Create them in BytePhase under Settings → Custom fields, choose that form type, then refresh."
+msgstr ""
+
+#: src/Settings/FormsPage.php:313
+msgid "Open BytePhase"
 msgstr ""
 
 #: src/Settings/FormsPage.php:318
+msgid "Fields found in BytePhase — tick the ones to publish on this form:"
+msgstr ""
+
+#: src/Settings/FormsPage.php:331
+msgid " — required"
+msgstr ""
+
+#: src/Settings/FormsPage.php:338
+msgid "Required fields are always shown — BytePhase rejects a submission without them."
+msgstr ""
+
+#. translators: %s: human readable time difference, e.g. "2 hours".
+#: src/Settings/FormsPage.php:347
+#, php-format
+msgid "Last checked %s ago."
+msgstr ""
+
+#: src/Settings/FormsPage.php:352
+msgid "Not checked yet — connect BytePhase on the Connection screen first."
+msgstr ""
+
+#: src/Settings/FormsPage.php:355
+msgid "Refresh"
+msgstr ""
+
+#: src/Settings/FormsPage.php:487
+msgid "Lead (an enquiry)"
+msgstr ""
+
+#: src/Settings/FormsPage.php:488
+msgid "Self check-in (a repair booking)"
+msgstr ""
+
+#: src/Settings/FormsPage.php:494
+msgid "Contact Form 7"
+msgstr ""
+
+#: src/Settings/FormsPage.php:495
+msgid "Elementor"
+msgstr ""
+
+#: src/Settings/FormsPage.php:496
 msgid "Website form"
 msgstr ""
 
@@ -433,21 +494,27 @@ msgstr ""
 #. translators: %s: menu location
 #: src/Settings/SettingsPage.php:199
 #, php-format
+msgid "Want to ask more than the standard questions? Create the fields in BytePhase, then switch them on for the ready-made forms under %s."
+msgstr ""
+
+#. translators: %s: menu location
+#: src/Settings/SettingsPage.php:208
+#, php-format
 msgid "See what has been sent, and retry anything that failed, under %s."
 msgstr ""
 
-#: src/Settings/SettingsPage.php:268
+#: src/Settings/SettingsPage.php:277
 msgid "Connected to BytePhase."
 msgstr ""
 
-#: src/Settings/SettingsPage.php:269
+#: src/Settings/SettingsPage.php:278
 msgid "The API key was rejected. Enter a new API key and save, then test again."
 msgstr ""
 
-#: src/Settings/SettingsPage.php:270
+#: src/Settings/SettingsPage.php:279
 msgid "The Store ID was not recognized. Check the Store ID and try again."
 msgstr ""
 
-#: src/Settings/SettingsPage.php:271
+#: src/Settings/SettingsPage.php:280
 msgid "Could not reach BytePhase. Check the API address and try again."
 msgstr ""

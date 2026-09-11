@@ -106,7 +106,7 @@ changed.
 
 ```bash
 cd ~/workspace/bytephase-wordpress-plugin
-docker run --rm -v "$PWD":/app -w /app wordpress:cli-php8.2 \
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/app -w /app wordpress:cli-php8.2 \
   wp i18n make-pot . languages/bytephase-connector.pot \
   --exclude=tests,docs,vendor,node_modules
 
@@ -242,7 +242,7 @@ git tags `v1.0.0` and `v1.0.1` both exist and are pushed.
 # 1. bump 4 version locations + changelog + upgrade notice
 # 2. verify
 composer test && composer phpcs && composer phpstan
-docker run --rm -v "$PWD":/app -w /app wordpress:cli-php8.2 \
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/app -w /app wordpress:cli-php8.2 \
   wp i18n make-pot . languages/bytephase-connector.pot --exclude=tests,docs,vendor,node_modules
 git add -A && git commit -m "chore(release): X.Y.Z" && git push
 
