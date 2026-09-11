@@ -4,7 +4,7 @@
  * Plugin Name:       BytePhase Connector
  * Plugin URI:        https://bytephase.com/integrations/wordpress/
  * Description:        Capture WordPress form enquiries into BytePhase repair shop management software as leads and repair check-ins. BytePhase does all the field mapping and business logic.
- * Version:           1.0.1
+ * Version:           1.1.0
  * Requires at least: 6.0
  * Requires PHP:      8.1
  * Author:            BytePhase
@@ -20,7 +20,7 @@ use BytePhase\Connector\Plugin;
 
 defined('ABSPATH') || exit;
 
-define('BYTEPHASE_CONNECTOR_VERSION', '1.0.1');
+define('BYTEPHASE_CONNECTOR_VERSION', '1.1.0');
 define('BYTEPHASE_CONNECTOR_FILE', __FILE__);
 define('BYTEPHASE_CONNECTOR_PATH', plugin_dir_path(__FILE__));
 define('BYTEPHASE_CONNECTOR_URL', plugin_dir_url(__FILE__));
